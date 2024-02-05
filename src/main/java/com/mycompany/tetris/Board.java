@@ -71,12 +71,23 @@ public class Board extends javax.swing.JPanel {
     }
     
     public boolean canMove(Shape shape, int row, int col) {
-        return 
+        if (col + shape.getMinX() < 0 || col + shape.getMaxX() >= NUM_COLS) {
+            return false;
+        }
+        if (col + shape.getMaxX() >= NUM_ROWS) {
+            return false;
+        }
+        if (row + shape.getMaxY() >= NUM_ROWS) {
+            return false;
+        }
+        return true;
     }
 
     public void tick() {
-        currentRow++;
-        repaint();
+        if (canMove(currentShape, currentRow + 1, currentCol)) {
+            currentRow++;
+            repaint();
+        }
     }
 
     /**
@@ -149,6 +160,7 @@ public class Board extends javax.swing.JPanel {
         return getHeight() / NUM_ROWS;
     }
 
+    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
