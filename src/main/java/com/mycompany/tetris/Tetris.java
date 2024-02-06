@@ -34,18 +34,41 @@ public class Tetris extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        scoreBoard1 = new com.mycompany.tetris.ScoreBoard();
+        board1 = new com.mycompany.tetris.Board();
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 206, Short.MAX_VALUE)
+        scoreBoard1.setBackground(new java.awt.Color(51, 153, 0));
+
+        javax.swing.GroupLayout scoreBoard1Layout = new javax.swing.GroupLayout(scoreBoard1);
+        scoreBoard1.setLayout(scoreBoard1Layout);
+        scoreBoard1Layout.setHorizontalGroup(
+            scoreBoard1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 180, Short.MAX_VALUE)
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 351, Short.MAX_VALUE)
+        scoreBoard1Layout.setVerticalGroup(
+            scoreBoard1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 40, Short.MAX_VALUE)
         );
+
+        getContentPane().add(scoreBoard1, java.awt.BorderLayout.PAGE_END);
+
+        board1.setPreferredSize(new java.awt.Dimension(250, 594));
+        board1.setRequestFocusEnabled(false);
+
+        javax.swing.GroupLayout board1Layout = new javax.swing.GroupLayout(board1);
+        board1.setLayout(board1Layout);
+        board1Layout.setHorizontalGroup(
+            board1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 180, Short.MAX_VALUE)
+        );
+        board1Layout.setVerticalGroup(
+            board1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 330, Short.MAX_VALUE)
+        );
+
+        getContentPane().add(board1, java.awt.BorderLayout.CENTER);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -87,5 +110,7 @@ public class Tetris extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private com.mycompany.tetris.Board board1;
+    private com.mycompany.tetris.ScoreBoard scoreBoard1;
     // End of variables declaration//GEN-END:variables
 }
