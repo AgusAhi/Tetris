@@ -6,6 +6,9 @@ package com.mycompany.tetris;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 
 /**
@@ -41,6 +44,9 @@ public class Board extends javax.swing.JPanel {
                         currentRow++;
                     }
                     break;
+                case KeyEvent.VK_UP:
+                    dropShape();
+                    break;
                 default:
                     break;
             }
@@ -50,14 +56,13 @@ public class Board extends javax.swing.JPanel {
 
     public static final int NUM_ROWS = 22;
     public static final int NUM_COLS = 10;
-    public static final int DELTA_TIME = 500; // Milliseconds
-
     private Shape currentShape;
     private int currentRow;
     private int currentCol;
     private Timer timer;
     private MyKeyAdapter keyAdapter;
     private Tetrominoes[][] matrix;
+    private ScoreInterface score;
 
     /**
      * Creates new form Board
@@ -65,17 +70,39 @@ public class Board extends javax.swing.JPanel {
     public Board() {
         initComponents();
         initMatrix();
-        createNewCurrentShape();
         keyAdapter = new MyKeyAdapter();
         addKeyListener(keyAdapter);
         setFocusable(true);
-        timer = new Timer(DELTA_TIME, new ActionListener() {
+    }
+    
+    public void initGame() {
+        initMatrix();
+        createNewCurrentShape();
+        int deltaTime = ConfigData.getInstance().getDeltaTime();
+        if (timer != null && timer.isRunning()) {
+            timer.stop();
+        }
+        timer = new Timer(deltaTime, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 tick();
             }
         });
         timer.start();
+    }
+    
+    
+    public void dropShape() {
+        int row = currentRow;
+        while (canMove(currentShape, row + 1, currentCol)) {
+            row++;
+        }
+        currentRow = row;
+    }
+    
+    
+    public void setScoreInterface(ScoreInterface scoreInterface) {
+        this.score = scoreInterface;
     }
     
     public void initMatrix() {
@@ -110,7 +137,7 @@ public class Board extends javax.swing.JPanel {
             if (cc < 0 || cc >= NUM_COLS) {
                 return true;
             }
-            if (row >= 0) {
+            if (rr >= 0) {
                 if (matrix[rr][cc] != Tetrominoes.NoShape) {
                 return true;
                 }
@@ -120,22 +147,30 @@ public class Board extends javax.swing.JPanel {
     }
 
     public void tick() {
+        if (shapeHitsMatrix(currentShape, 0, currentCol)) {
+            processGameOver();
+            return;
+        }
         if (canMove(currentShape, currentRow + 1, currentCol)) {
             currentRow++;
-            repaint();
         } else {
             copyCurrentShapeToMatrix();
             checkCompletedRows();
             createNewCurrentShape();
         }
+        repaint();
 
     }
     
     
     public void checkCompletedRows() {
-        for (int row = 0; row < matrix.length; row++) {
+        int row = NUM_ROWS - 1;
+        while(row >= 0) {
             if (isRowCompleted(row)) {
                 deleteRow(row); 
+                score.incrementScore();
+            } else {
+                row--;
             }
         }
     }
@@ -150,10 +185,13 @@ public class Board extends javax.swing.JPanel {
     }
     
     public void deleteRow(int row) {
-        for (int i = row; i > 0; i++) {
-            for (int j = 0; j < NUM_ROWS; j++) {
-                matrix[i][1] = matrix[i - 1][row];
+        for (int r = row; r > 0; r--) {
+            for (int col = 0; col < NUM_COLS; col++) {
+                matrix[r][col] = matrix[r - 1][col];
             }
+        }
+        for (int col = 0; col < NUM_COLS; col++) {
+            matrix[0][col] = Tetrominoes.NoShape;
         }
     }
    
@@ -162,7 +200,9 @@ public class Board extends javax.swing.JPanel {
         for (int i = 0; i < 4; i++) {
             int row = currentRow + currentShape.getY(i);
             int col = currentCol + currentShape.getX(i);
-            matrix[row][col] = currentShape.getShape();
+            if (row >= 0) {
+                matrix[row][col] = currentShape.getShape();
+            }
         }
     }
     
@@ -190,7 +230,9 @@ public class Board extends javax.swing.JPanel {
         super.paintComponent(g);
         paintBorder(g);
         paintMatrix(g);
-        paintCurrentShape(g);
+        if (currentShape != null) {
+            paintCurrentShape(g);
+        }
     }
     
     public void paintMatrix(Graphics g) {
@@ -253,6 +295,63 @@ public class Board extends javax.swing.JPanel {
     private int getSquareHeight() {
         return getHeight() / NUM_ROWS;
     }
+    
+    public void processGameOver() {
+        timer.stop();
+        removeKeyListener(keyAdapter);
+        currentShape = null;
+        fillMatrixWithGameOver();
+            
+    }
+    
+    public void pauseGame() {
+        if (timer != null && timer.isRunning()) {
+            timer.stop();
+            removeKeyListener(keyAdapter);
+        }
+    }
+    
+    public void resumeGame() {
+        if (timer != null && !timer.isRunning()) {
+            timer.start();
+            addKeyListener(keyAdapter);
+        }
+    }
+    
+    public static int rowGO;
+    public static int colGO;
+    private static Timer timerGO;
+    
+    private void fillMatrixWithGameOver() {
+        rowGO = 0;
+        colGO = 0;
+        timerGO = new Timer(20, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                matrix[rowGO][colGO] = Tetrominoes.LineShape;
+                repaint();
+                colGO++;
+                if (colGO >= NUM_COLS) {
+                    colGO = 0;
+                    rowGO++;
+                }
+                if (colGO >= NUM_COLS) {
+                    timer.stop();
+                }
+            }
+        });
+        timerGO.start();
+        /*
+        try {
+            Thread.sleep(10000); // 10000 milisegundos = 10 segundos
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        */
+    }
+    
+
+
 
     
 
